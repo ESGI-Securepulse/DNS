@@ -1,0 +1,22 @@
+securepulse.fr:53 {
+    # Static zone: SOA + MX pointing to mail.securepulse.fr
+    # mail.securepulse.fr A records come from etcd (dynamic, registered by HAProxy)
+    file /etc/coredns/db.securepulse.fr {
+        fallthrough
+    }
+    # Dynamic records: services self-register here on start, deregister on stop
+    etcd {
+        path /skydns
+        endpoint http://etcd:2379
+        fallthrough
+    }
+    cache 5
+    log
+    errors
+}
+
+. {
+    forward . 8.8.8.8 8.8.4.4
+    cache 30
+    errors
+}
