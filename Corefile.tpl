@@ -1,0 +1,28 @@
+${DOMAIN}:53 {
+    # Toutes les résolutions (statiques et dynamiques) passent par le plugin
+    # etcd. db.securepulse.fr (conservé dans ce repo à titre de référence,
+    # non chargé) documentait l'intention initiale d'une zone statique
+    # (SOA/NS/MX) devant laquelle les enregistrements dynamiques (services
+    # auto-enregistrés) passeraient en fallthrough — mais le plugin `file`
+    # de cette image coredns/coredns:1.11.3 ne supporte PAS `fallthrough`
+    # (constaté à l'exécution : "unknown property 'fallthrough'"), ce qui
+    # empêchait les deux plugins de coexister sur la même zone. Le plugin
+    # etcd fournit déjà une réponse SOA/NS synthétique correcte pour la
+    # zone ; seul le MX explicite (10 mail.securepulse.fr) n'est plus servi
+    # — limitation connue, sans impact sur la découverte de service (LDAP,
+    # Mail, LB-Syo, storage-lucien) qui repose entièrement sur les
+    # enregistrements A dynamiques ci-dessous.
+    etcd {
+        path /skydns
+        endpoint ${ETCD_URL}
+    }
+    cache 5
+    log
+    errors
+}
+
+. {
+    forward . 8.8.8.8 8.8.4.4
+    cache 30
+    errors
+}

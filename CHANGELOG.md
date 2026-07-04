@@ -24,3 +24,13 @@
 Ces deux bugs empêchaient CoreDNS de démarrer *du tout* — non détectés
 avant les tests d'intégration Docker multi-repos (LB-Syo), ce repo n'ayant
 jamais été testé en conditions réelles jusqu'ici.
+
+### Ajouté
+- `deploy/` : déploiement réel (un site = un serveur dédié), distinct du
+  banc de test mono-hôte (`docker-compose.yml`/`tests/`). L'image
+  `coredns/coredns` étant distroless (pas de shell), le templating de
+  l'endpoint etcd ne peut pas se faire au démarrage du conteneur comme
+  ailleurs dans le projet (`envsubst` en entrypoint) : `Corefile.tpl` est
+  rendu côté hôte de déploiement par `deploy/generate-config.sh`, puis
+  monté par-dessus celui baké dans l'image (pas de rebuild par site).
+  `deploy/deploy.sh <site>` lance le conteneur avec la config du site.

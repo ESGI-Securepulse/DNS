@@ -1,0 +1,16 @@
+# DNS/deploy/docker-compose.prod.yml — un conteneur CoreDNS pour CE site,
+# à lancer sur le serveur réel de ce datacenter. Le Corefile rendu par
+# generate-config.sh (sites/<SITE>/Corefile) remplace celui baké dans
+# l'image (utile en test mono-hôte) sans nécessiter de rebuild par site.
+# Bridge Docker classique + ports publiés (pas de network_mode: host, pour
+# ne jamais entrer en conflit avec un résolveur DNS déjà présent sur l'hôte).
+services:
+  dns:
+    build: ..
+    container_name: dns-${SITE}
+    restart: always
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    volumes:
+      - ./sites/${SITE}/Corefile:/Corefile:ro
